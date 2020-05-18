@@ -17,4 +17,23 @@ class Space extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
+
+    // Mencari data terdekat dari kita
+    public function getSpaces($latitude, $longitude, $radius)
+    {
+      return $this->select('spaces.*')
+        ->selectRaw(
+            '(6731 *
+                acos( cos(radians(?)) *
+                    cos( radians(latitude)) *
+                    cos( radians(longitude) - radians(?)) +
+                    sin( radians(?))*
+                    sin( radians( latitude))
+                )
+            ) AS distance', [$latitude, $longitude, $latitude]
+        )
+        ->havingRaw("distance < ?", [$radius])
+        ->orderBy('distance', 'asc');
+
+    }
 }

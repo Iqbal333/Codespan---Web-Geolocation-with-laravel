@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Space;
 
 class SpaceController extends Controller
 {
@@ -17,7 +18,8 @@ class SpaceController extends Controller
      */
     public function index()
     {
-        return view('pages.space.index');
+        $spaces = Space::orderBy('created_at', 'DESC')->paginate(4);
+        return view('pages.space.index', compact('spaces'));
     }
 
     /**
@@ -30,6 +32,10 @@ class SpaceController extends Controller
         return view('pages.space.create');
     }
 
+    public function browse()
+    {
+        return view('pages.space.browse');
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -38,7 +44,16 @@ class SpaceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'title' => ['required', 'min:3'],
+            'address' => ['required', 'min:5'],
+            'description' => ['required', 'min:10'],
+            // 'latitude' => ['required'],
+            // 'longitude' => ['required'],
+        ]);
+
+        $request->user()->spaces()->create($request->all());
+        return redirect()->route('space.index')->with('status', 'Space created!');
     }
 
     /**
